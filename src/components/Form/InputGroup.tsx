@@ -7,10 +7,11 @@ export interface InputGroupProps {
 	value: string
 	type?: 'text' | 'date' | 'number'
 	inputRef?: Ref<HTMLInputElement>
+	onFocus?: () => void
 	onChange: (value: string) => void
 }
 
-export default function InputGroup({ id, label, value, type = 'text', inputRef, onChange }: InputGroupProps) {
+export default function InputGroup({ id, label, value, type = 'text', inputRef, onFocus, onChange }: InputGroupProps) {
 	const reduceMotion = useReducedMotion()
 	const inputOrder = id.split('-').reduce((order, segment) => order + segment.charCodeAt(0), 0) % 8
 
@@ -33,6 +34,7 @@ export default function InputGroup({ id, label, value, type = 'text', inputRef, 
 				name={id}
 				type={type}
 				value={value}
+				onFocus={onFocus}
 				onChange={handleChange}
 			/>
 		</motion.div>

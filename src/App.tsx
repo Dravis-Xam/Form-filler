@@ -31,6 +31,7 @@ function loadSavedForm(): MarriageCertificateForm {
 export default function App() {
   const [form, setForm] = useState<MarriageCertificateForm>(loadSavedForm)
   const [pathname, setPathname] = useState(() => window.location.pathname)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
   const showWorkspace = isWorkspacePath(pathname)
   const showSpreadsheetUpload = pathname === '/upload'
   const activeSection = getSectionFromPath(pathname)
@@ -107,8 +108,14 @@ export default function App() {
         <span className="workspace__status"><span />Draft saved locally</span>
       </header>
       <div className="workspace__columns">
-        <Form form={form} onChange={setForm} activeTab={activeSection} onTabChange={(section) => navigate(`/workspace/${section}`)} />
-        <Canvas form={form} />
+        <Form
+          form={form}
+          onChange={setForm}
+          activeTab={activeSection}
+          onTabChange={(section) => navigate(`/workspace/${section}`)}
+          onFieldFocus={setFocusedField}
+        />
+        <Canvas form={form} focusedField={focusedField} />
       </div>
     </main>
   )

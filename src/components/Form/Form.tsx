@@ -16,6 +16,7 @@ interface FormProps {
 	onChange: (form: MarriageCertificateForm) => void
 	activeTab: string
 	onTabChange: (tabId: string) => void
+	onFieldFocus: (fieldId: string) => void
 }
 
 function formatLabel(value: string) {
@@ -85,7 +86,7 @@ function setValueAtPath(source: unknown, path: (string | number)[], value: strin
 	return source
 }
 
-export default function Form({ form, onChange, activeTab, onTabChange }: FormProps) {
+export default function Form({ form, onChange, activeTab, onTabChange, onFieldFocus }: FormProps) {
 	const [isPrinting, setIsPrinting] = useState(false)
 	const [printError, setPrintError] = useState('')
 	const firstIncompleteRef = useRef<HTMLInputElement>(null)
@@ -134,6 +135,7 @@ export default function Form({ form, onChange, activeTab, onTabChange }: FormPro
 					key={path.join('-')}
 					label={label}
 					inputRef={incompletePath?.join('-') === path.join('-') ? firstIncompleteRef : undefined}
+					onFocus={() => onFieldFocus(path.join('-'))}
 					type={key === 'dateOfMarriage' ? 'date' : 'text'}
 					value={value}
 					onChange={(nextValue) => updateField(path, nextValue)}

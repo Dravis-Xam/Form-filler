@@ -709,8 +709,10 @@ scrollbar-width: thin;
 .preview-panel {
 	display: flex;
 	min-width: 0;
-	min-height: calc(100vh - 64px);
+	height: calc(100vh - 64px);
+	min-height: 0;
 	flex-direction: column;
+	overflow: hidden;
 	padding: 28px 32px 30px;
 	background: var(--canvas);
 }
@@ -747,9 +749,10 @@ scrollbar-width: thin;
 	flex: 1;
 	width: 100%;
 	min-width: 0;
-	min-height: 520px;
+	min-height: 0;
 	padding: 20px;
 	overflow: auto;
+	overscroll-behavior: contain;
 	background-color: #e2e5df;
 	background-image: radial-gradient(#c7ccc4 0.7px, transparent 0.7px);
 	background-size: 12px 12px;
@@ -767,10 +770,10 @@ scrollbar-width: thin;
 .preview-panel__page {
 	position: relative;
 	width: fit-content;
-	max-width: 100%;
 	margin-inline: auto;
 	container-type: inline-size;
 	box-shadow: 0 4px 18px rgba(37, 44, 42, 0.12);
+	transition: width 220ms ease, height 220ms ease;
 }
 
 .preview-panel__page .preview-panel__document {
@@ -813,7 +816,9 @@ scrollbar-width: thin;
 	}
 
 	.preview-panel {
-		min-height: 720px;
+		height: 720px;
+		min-height: 0;
+		overflow: hidden;
 	}
 }
 
@@ -863,12 +868,13 @@ scrollbar-width: thin;
 	}
 
 	.preview-panel {
-		min-height: 640px;
+		height: 640px;
+		min-height: 0;
 		padding: 23px 16px;
 	}
 
 	.preview-panel__canvas {
-		min-height: 520px;
+		min-height: 0;
 	}
 
 	.preview-panel__page .preview-panel__document {
