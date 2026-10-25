@@ -1,4 +1,5 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import {
   importMarriageWorkbook,
   type ImportedWorkbook,
@@ -9,11 +10,14 @@ interface SpreadsheetUploadProps {
 }
 
 export default function SpreadsheetUpload({ onBack }: SpreadsheetUploadProps) {
+  const reduceMotion = useReducedMotion()
   const inputRef = useRef<HTMLInputElement>(null)
   const [workbook, setWorkbook] = useState<ImportedWorkbook | null>(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [fileName, setFileName] = useState('')
+  const reveal = reduceMotion ? undefined : { opacity: 0, y: 14 }
+  const enter = { opacity: 1, y: 0 }
 
   async function handleFile(file?: File) {
     if (!file) return
@@ -59,19 +63,29 @@ export default function SpreadsheetUpload({ onBack }: SpreadsheetUploadProps) {
 
   return (
     <main className="upload-page">
-      <header className="upload-page__topbar">
+      <motion.header
+        className="upload-page__topbar"
+        initial={reveal}
+        animate={enter}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
         <button className="upload-page__back" type="button" onClick={onBack} aria-label="Back to home">
           <span aria-hidden="true">←</span> Home
         </button>
         <span className="upload-page__brand"><span aria-hidden="true">&amp;</span> Certificate Studio</span>
-      </header>
+      </motion.header>
 
       <section className="upload-page__content" aria-labelledby="upload-title">
-        <div className="upload-page__heading">
+        <motion.div
+          className="upload-page__heading"
+          initial={reveal}
+          animate={enter}
+          transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.08, ease: 'easeOut' }}
+        >
           <p className="upload-page__eyebrow">Spreadsheet import</p>
           <h1 id="upload-title">Bring your records in.</h1>
           <p>Upload an Excel workbook to review its sheets, columns, and records.</p>
-        </div>
+        </motion.div>
 
         <input
           ref={inputRef}
@@ -82,8 +96,11 @@ export default function SpreadsheetUpload({ onBack }: SpreadsheetUploadProps) {
           aria-label="Choose an Excel workbook"
         />
 
-        <div
+        <motion.div
           className="upload-dropzone"
+          initial={reveal}
+          animate={enter}
+          transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.16, ease: 'easeOut' }}
           onDragOver={(event) => event.preventDefault()}
           onDrop={handleDrop}
         >
@@ -93,12 +110,22 @@ export default function SpreadsheetUpload({ onBack }: SpreadsheetUploadProps) {
           <button className="upload-dropzone__button" type="button" disabled={isLoading} onClick={() => inputRef.current?.click()}>
             {isLoading ? 'Importing…' : 'Browse files'}
           </button>
-        </div>
+        </motion.div>
 
-        {error && <p className="upload-page__error" role="alert">{error}</p>}
+        {error && (
+          <motion.p className="upload-page__error" role="alert" initial={reveal} animate={enter}>
+            {error}
+          </motion.p>
+        )}
 
         {workbook && (
-          <section className="upload-summary" aria-label="Imported workbook summary">
+          <motion.section
+            className="upload-summary"
+            aria-label="Imported workbook summary"
+            initial={reveal}
+            animate={enter}
+            transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.1, ease: 'easeOut' }}
+          >
             <div className="upload-summary__header">
               <div>
                 <p className="upload-summary__eyebrow">Workbook ready</p>
@@ -121,7 +148,7 @@ export default function SpreadsheetUpload({ onBack }: SpreadsheetUploadProps) {
               </ul>
             </div>
             <p className="upload-summary__next">Column mapping and record preview will be available in the next step.</p>
-          </section>
+          </motion.section>
         )}
       </section>
     </main>
