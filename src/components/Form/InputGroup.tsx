@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, Ref } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 
 export interface InputGroupProps {
@@ -6,10 +6,11 @@ export interface InputGroupProps {
 	label: string
 	value: string
 	type?: 'text' | 'date' | 'number'
+	inputRef?: Ref<HTMLInputElement>
 	onChange: (value: string) => void
 }
 
-export default function InputGroup({ id, label, value, type = 'text', onChange }: InputGroupProps) {
+export default function InputGroup({ id, label, value, type = 'text', inputRef, onChange }: InputGroupProps) {
 	const reduceMotion = useReducedMotion()
 	const inputOrder = id.split('-').reduce((order, segment) => order + segment.charCodeAt(0), 0) % 8
 
@@ -28,6 +29,7 @@ export default function InputGroup({ id, label, value, type = 'text', onChange }
 			<input
 				className="input-group__control"
 				id={id}
+				ref={inputRef}
 				name={id}
 				type={type}
 				value={value}

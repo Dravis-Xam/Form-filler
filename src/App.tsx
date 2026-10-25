@@ -1,11 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Canvas from './components/Canvas'
 import Form from './components/Form/Form'
 import { marriageCertificateForm, type MarriageCertificateForm } from './constants/FormObject'
 import './App.css'
 
+const STORAGE_KEY = 'marriage-certificate-form'
+
+function loadSavedForm(): MarriageCertificateForm {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? { ...structuredClone(marriageCertificateForm), ...JSON.parse(saved) } : structuredClone(marriageCertificateForm)
+  } catch {
+    return structuredClone(marriageCertificateForm)
+  }
+}
+
 export default function App() {
-  const [form, setForm] = useState<MarriageCertificateForm>(() => structuredClone(marriageCertificateForm))
+  const [form, setForm] = useState<MarriageCertificateForm>(loadSavedForm)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form))
+  }, [form])
 
   return (
     <main className="workspace">

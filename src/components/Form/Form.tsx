@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import type { MarriageCertificateForm } from '../../constants/FormObject'
 import InputGroup from './InputGroup'
 import Tabs, { type FormTab } from '../Tabs'
+import { printMarriageDraft } from '../../utils/generateMarriageDraft'
 
 const tabs: FormTab[] = [
 	{ id: 'ceremony', label: 'Ceremony' },
@@ -43,6 +44,26 @@ function countFields(value: unknown): { total: number; filled: number } {
 	return { total: 0, filled: 0 }
 }
 
+function findFirstEmptyPath(value: unknown, path: (string | number)[] = []): (string | number)[] | null {
+	if (typeof value === 'string') return value.trim() ? null : path
+
+	if (Array.isArray(value)) {
+		for (let index = 0; index < value.length; index += 1) {
+			const emptyPath = findFirstEmptyPath(value[index], [...path, index])
+			if (emptyPath) return emptyPath
+		}
+	}
+
+	if (value && typeof value === 'object') {
+		for (const [key, child] of Object.entries(value)) {
+			const emptyPath = findFirstEmptyPath(child, [...path, key])
+			if (emptyPath) return emptyPath
+		}
+	}
+
+	return null
+}
+
 function setValueAtPath(source: unknown, path: (string | number)[], value: string): unknown {
 	const [key, ...remaining] = path
 	if (key === undefined) return value
@@ -64,13 +85,39 @@ function setValueAtPath(source: unknown, path: (string | number)[], value: strin
 
 export default function Form({ form, onChange }: FormProps) {
 	const [activeTab, setActiveTab] = useState(tabs[0].id)
+	const [isPrinting, setIsPrinting] = useState(false)
+	const [printError, setPrintError] = useState('')
+	const firstIncompleteRef = useRef<HTMLInputElement>(null)
 	const activeIndex = tabs.findIndex((tab) => tab.id === activeTab)
 	const activeSection = form[activeTab as keyof MarriageCertificateForm]
 	const { total, filled } = countFields(form)
 	const progress = total ? Math.round((filled / total) * 100) : 0
+	const incompletePath = findFirstEmptyPath(form)
+	const isComplete = incompletePath === null
 
 	function updateField(path: (string | number)[], value: string) {
 		onChange(setValueAtPath(form, path, value) as MarriageCertificateForm)
+	}
+
+	function goToIncompleteField() {
+		if (!incompletePath) return
+		setActiveTab(String(incompletePath[0]))
+		window.requestAnimationFrame(() => {
+			firstIncompleteRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+			firstIncompleteRef.current?.focus({ preventScroll: true })
+		})
+	}
+
+	async function handlePrint() {
+		setIsPrinting(true)
+		setPrintError('')
+		try {
+			await printMarriageDraft(form)
+		} catch (error) {
+			setPrintError(error instanceof Error ? error.message : 'Could not generate the certificate PDF.')
+		} finally {
+			setIsPrinting(false)
+		}
 	}
 
 	function renderFields(value: unknown, path: (string | number)[]): ReactNode {
@@ -84,6 +131,7 @@ export default function Form({ form, onChange }: FormProps) {
 					id={path.join('-')}
 					key={path.join('-')}
 					label={label}
+					inputRef={incompletePath?.join('-') === path.join('-') ? firstIncompleteRef : undefined}
 					type={key === 'dateOfMarriage' ? 'date' : 'text'}
 					value={value}
 					onChange={(nextValue) => updateField(path, nextValue)}
@@ -157,16 +205,25 @@ export default function Form({ form, onChange }: FormProps) {
 				>
 					Previous
 				</button>
-				<button
-					className="form-footer__button form-footer__button--primary"
-					type="button"
-					disabled={activeIndex === tabs.length - 1}
-					onClick={() => setActiveTab(tabs[activeIndex + 1].id)}
-				>
-					Continue
-					<span aria-hidden="true">→</span>
-				</button>
+				{activeIndex < tabs.length - 1 ? (
+					<button
+						className="form-footer__button form-footer__button--primary"
+						type="button"
+						onClick={() => setActiveTab(tabs[activeIndex + 1].id)}
+					>
+						Continue <span aria-hidden="true">→</span>
+					</button>
+				) : isComplete ? (
+					<button className="form-footer__button form-footer__button--primary" type="button" disabled={isPrinting} onClick={() => void handlePrint()}>
+						{isPrinting ? 'Preparing PDF…' : 'Print'}
+					</button>
+				) : (
+					<button className="form-footer__button" type="button" onClick={goToIncompleteField}>
+						Go to incomplete part
+					</button>
+				)}
 			</footer>
+			{printError && <p className="form-footer__error" role="alert">{printError}</p>}
 		</section>
 	)
 }

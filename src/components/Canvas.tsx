@@ -3,6 +3,8 @@ import * as pdfjs from 'pdfjs-dist'
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import marriageCertificatePdf from '../assets/marriage.pdf'
 import type { MarriageCertificateForm } from '../constants/FormObject'
+import { createCoordinateMatrix, scaleCoordinate } from '../utils/coordinateMatrix'
+import { overlayFields, readOverlayValue } from '../utils/overlayFields'
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
 
@@ -10,75 +12,12 @@ interface CanvasProps {
 	form: MarriageCertificateForm
 }
 
-interface OverlayField {
-	path: (string | number)[]
-	combineWith?: (string | number)[]
-	x: number
-	y: number
-	width: number
-	fontSize?: number
-}
-
-const overlayFields: OverlayField[] = [
-	{ path: ['ceremony', 'solemnizedAt'], x: 29, y: 19.4, width: 12 },
-	{ path: ['ceremony', 'location'], x: 44, y: 19.4, width: 10 },
-	{ path: ['ceremony', 'subCounty'], combineWith: ['ceremony', 'county'], x: 61, y: 19.4, width: 21 },
-	{ path: ['ceremony', 'dateOfMarriage'], x: 17, y: 23.4, width: 32 },
-	{ path: ['ceremony', 'marriageEntryNumber'], x: 50, y: 23.4, width: 31 },
-	{ path: ['bridegroom', 'name'], x: 17, y: 27.6, width: 31 },
-	{ path: ['bridegroom', 'age'], x: 55, y: 25.8, width: 11 },
-	{ path: ['bridegroom', 'maritalStatus'], x: 73, y: 25.8, width: 17 },
-	{ path: ['bridegroom', 'residenceAtMarriage'], x: 34, y: 32.3, width: 31 },
-	{ path: ['bridegroom', 'county'], x: 56, y: 32.3, width: 11 },
-	{ path: ['bridegroom', 'subCounty'], x: 73, y: 32.3, width: 17 },
-	{ path: ['bridegroom', 'occupation'], x: 24, y: 35.9, width: 64 },
-	{ path: ['bridegroom', 'father', 'name'], x: 26, y: 39.2, width: 31 },
-	{ path: ['bridegroom', 'mother', 'name'], x: 60, y: 39.2, width: 31 },
-	{ path: ['bridegroom', 'father', 'occupation'], x: 26, y: 42.5, width: 31 },
-	{ path: ['bridegroom', 'mother', 'occupation'], x: 60, y: 42.5, width: 31 },
-	{ path: ['bridegroom', 'father', 'residence'], x: 26, y: 45.7, width: 31 },
-	{ path: ['bridegroom', 'mother', 'residence'], x: 60, y: 45.7, width: 31 },
-	{ path: ['bride', 'name'], x: 17, y: 49.1, width: 31 },
-	{ path: ['bride', 'age'], x: 53, y: 46.7, width: 11 },
-	{ path: ['bride', 'maritalStatus'], x: 71, y: 46.7, width: 17 },
-	{ path: ['bride', 'residenceAtMarriage'], x: 32, y: 53, width: 31 },
-	{ path: ['bride', 'county'], x: 53, y: 53, width: 11 },
-	{ path: ['bride', 'subCounty'], x: 71, y: 53, width: 17 },
-	{ path: ['bride', 'occupation'], x: 23, y: 56.2, width: 64 },
-	{ path: ['bride', 'father', 'name'], x: 24, y: 59.4, width: 31 },
-	{ path: ['bride', 'mother', 'name'], x: 57, y: 59.4, width: 31 },
-	{ path: ['bride', 'father', 'occupation'], x: 22, y: 62.5, width: 31 },
-	{ path: ['bride', 'mother', 'occupation'], x: 56, y: 62.5, width: 31 },
-	{ path: ['bride', 'father', 'residence'], x: 22, y: 65.5, width: 31 },
-	{ path: ['bride', 'mother', 'residence'], x: 56, y: 65.5, width: 31 },
-	{ path: ['registration', 'marriedIn'], x: 24, y: 71.6, width: 25 },
-	{ path: ['registration', 'registrarCertificateOrSpecialLicenseNumber'], x: 63, y: 71.6, width: 19},
-	{ path: ['registration', 'officiatedBy'], x: 58, y: 74.8, width: 19 },
-	{ path: ['registration', 'parties', 0], x: 27, y: 78.5, width: 21 },
-	{ path: ['registration', 'parties', 1], x: 27, y: 82.5, width: 21 },
-	{ path: ['registration', 'witnesses', 0], x: 58, y: 78.5, width: 18 },
-	{ path: ['registration', 'witnesses', 1], x: 58, y: 82.5, width: 18 },
-]
-
-function readPath(form: MarriageCertificateForm, path: (string | number)[]) {
-	let value: unknown = form
-	for (const part of path) {
-		if (value === null || typeof value !== 'object') return ''
-		value = (value as Record<string | number, unknown>)[part]
-	}
-	return typeof value === 'string' ? value : ''
-}
-
-function readOverlayValue(form: MarriageCertificateForm, field: OverlayField) {
-	const value = readPath(form, field.path)
-	const combinedValue = field.combineWith ? readPath(form, field.combineWith) : ''
-	return [value, combinedValue].filter(Boolean).join(', ')
-}
-
 export default function Canvas({ form }: CanvasProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const frameRef = useRef<HTMLDivElement>(null)
+	const pageRef = useRef<HTMLDivElement>(null)
 	const [error, setError] = useState(false)
+	const [coordinateMatrix, setCoordinateMatrix] = useState<ReturnType<typeof createCoordinateMatrix> | null>(null)
 
 	useEffect(() => {
 		let disposed = false
@@ -105,6 +44,16 @@ export default function Canvas({ form }: CanvasProps) {
 				canvas.height = Math.floor(viewport.height * pixelRatio)
 				canvas.style.width = `${viewport.width}px`
 				canvas.style.height = `${viewport.height}px`
+				if (pageRef.current) {
+					pageRef.current.style.width = `${viewport.width}px`
+					pageRef.current.style.height = `${viewport.height}px`
+					setCoordinateMatrix(createCoordinateMatrix(
+						baseViewport.width,
+						baseViewport.height,
+						viewport.width,
+						viewport.height,
+					))
+				}
 				context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
 				const previousTask = renderTask
 				const draw = () => {
@@ -153,7 +102,7 @@ export default function Canvas({ form }: CanvasProps) {
 				{error ? (
 					<p className="preview-panel__error">The certificate preview could not be loaded.</p>
 				) : (
-					<div className="preview-panel__page">
+					<div className="preview-panel__page" ref={pageRef}>
 						<canvas className="preview-panel__document" ref={canvasRef} aria-label="First page of the marriage certificate" />
 						{overlayFields.map((field) => {
 							const value = readOverlayValue(form, field)
@@ -162,7 +111,12 @@ export default function Canvas({ form }: CanvasProps) {
 								<span
 									className="preview-panel__value"
 									key={field.path.join('-')}
-									style={{ left: `${field.x}%`, top: `${field.y}%`, width: `${field.width}%`, fontSize: `clamp(5px, ${field.fontSize ?? 0.72}cqw, 12px)` }}
+									style={coordinateMatrix ? {
+										left: `${scaleCoordinate(field.x / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.scaleX)}px`,
+										top: `${scaleCoordinate(field.y / 100 * coordinateMatrix.referenceHeight, coordinateMatrix.scaleY)}px`,
+										width: `${scaleCoordinate(field.width / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.scaleX)}px`,
+										fontSize: `${Math.max(5, scaleCoordinate((field.fontSize ?? 0.72) / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.uniformScale))}px`,
+									} : undefined}
 									title={value}
 								>
 									{value}
