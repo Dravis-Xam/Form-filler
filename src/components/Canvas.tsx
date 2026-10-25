@@ -165,7 +165,7 @@ export default function Canvas({ form, focusedField }: CanvasProps) {
 										left: `${scaleCoordinate(field.x / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.scaleX) * (focusedOverlay ? PREVIEW_ZOOM : 1)}px`,
 										top: `${scaleCoordinate(field.y / 100 * coordinateMatrix.referenceHeight, coordinateMatrix.scaleY) * (focusedOverlay ? PREVIEW_ZOOM : 1)}px`,
 										width: `${scaleCoordinate(field.width / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.scaleX) * (focusedOverlay ? PREVIEW_ZOOM : 1)}px`,
-										fontSize: `${Math.max(5, scaleCoordinate((field.fontSize ?? 0.72) / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.uniformScale))}px`,
+										fontSize: `${Math.max(5, scaleCoordinate((field.fontSize ?? 0.72) / 100 * coordinateMatrix.referenceWidth, coordinateMatrix.uniformScale) * (focusedOverlay ? PREVIEW_ZOOM : 1))}px`,
 									} : undefined}
 									title={value || undefined}
 									aria-hidden="true"
