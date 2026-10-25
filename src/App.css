@@ -122,6 +122,241 @@
 	color: #a4513e;
 }
 
+.upload-page {
+	min-height: 100vh;
+	background: #f4f1eb;
+	color: #252c2a;
+}
+
+.upload-page__topbar {
+	display: flex;
+	height: 64px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 30px;
+	border-bottom: 1px solid rgba(37, 44, 42, 0.14);
+}
+
+.upload-page__back {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	padding: 8px 0;
+	border: 0;
+	background: none;
+	color: #49534f;
+	cursor: pointer;
+	font: inherit;
+	font-size: 13px;
+}
+
+.upload-page__back span {
+	font-size: 18px;
+}
+
+.upload-page__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 17px;
+}
+
+.upload-page__brand span {
+	display: grid;
+	width: 28px;
+	height: 28px;
+	place-items: center;
+	border: 1px solid #d8b8aa;
+	border-radius: 50%;
+	color: #a4513e;
+	font-size: 18px;
+}
+
+.upload-page__content {
+	width: min(100% - 48px, 720px);
+	margin: 0 auto;
+	padding: 74px 0 90px;
+}
+
+.upload-page__heading {
+	margin-bottom: 32px;
+}
+
+.upload-page__eyebrow,
+.upload-summary__eyebrow {
+	margin: 0 0 10px;
+	color: #a4513e;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.upload-page__heading h1 {
+	margin: 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 42px;
+	font-weight: 400;
+}
+
+.upload-page__heading > p:last-child {
+	max-width: 470px;
+	margin: 12px 0 0;
+	color: #626a66;
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.upload-page__file-input {
+	display: none;
+}
+
+.upload-dropzone {
+	display: flex;
+	min-height: 260px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 28px;
+	border: 1px dashed #aab0a8;
+	background: rgba(255, 254, 250, 0.7);
+	text-align: center;
+}
+
+.upload-dropzone__icon {
+	display: grid;
+	width: 44px;
+	height: 44px;
+	place-items: center;
+	border: 1px solid #dfc8be;
+	border-radius: 50%;
+	color: #a4513e;
+	font-size: 23px;
+}
+
+.upload-dropzone h2 {
+	max-width: 100%;
+	margin: 16px 0 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 21px;
+	font-weight: 400;
+	overflow-wrap: anywhere;
+}
+
+.upload-dropzone p {
+	margin: 7px 0 18px;
+	color: #727a75;
+	font-size: 12px;
+}
+
+.upload-dropzone__button {
+	min-height: 40px;
+	padding: 0 18px;
+	border: 0;
+	border-radius: 2px;
+	background: #a4513e;
+	color: #fffdf9;
+	cursor: pointer;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.upload-dropzone__button:disabled {
+	opacity: 0.65;
+	cursor: progress;
+}
+
+.upload-page__error {
+	margin: 14px 0 0;
+	color: #a2382e;
+	font-size: 13px;
+}
+
+.upload-summary {
+	margin-top: 28px;
+	padding-top: 24px;
+	border-top: 1px solid rgba(37, 44, 42, 0.15);
+}
+
+.upload-summary__header {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.upload-summary__eyebrow {
+	margin-bottom: 6px;
+}
+
+.upload-summary__header h2 {
+	margin: 0;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 23px;
+	font-weight: 400;
+}
+
+.upload-summary__count {
+	color: #49534f;
+	font-size: 13px;
+}
+
+.upload-summary__sheet-label {
+	display: flex;
+	max-width: 300px;
+	flex-direction: column;
+	gap: 7px;
+	margin-top: 22px;
+	color: #505954;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.upload-summary__sheet-label select {
+	min-height: 40px;
+	padding: 0 10px;
+	border: 1px solid #dfe2dc;
+	border-radius: 3px;
+	background: #fffefa;
+	color: #252c2a;
+	font: inherit;
+	font-weight: 400;
+}
+
+.upload-summary__columns {
+	margin-top: 24px;
+}
+
+.upload-summary__columns h3 {
+	margin: 0 0 12px;
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.upload-summary__columns ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.upload-summary__columns li {
+	padding: 7px 9px;
+	border: 1px solid #dedfd8;
+	background: rgba(255, 254, 250, 0.65);
+	color: #49534f;
+	font-size: 12px;
+}
+
+.upload-summary__next {
+	margin: 20px 0 0;
+	color: #727a75;
+	font-size: 12px;
+}
+
 @media (max-width: 600px) {
 	.hero {
 		padding: 32px 24px;
@@ -151,6 +386,29 @@
 	.hero__background-image {
 		top: 78%;
 		width: min(82vw, 360px);
+	}
+
+	.upload-page__topbar {
+		height: 58px;
+		padding: 0 16px;
+	}
+
+	.upload-page__brand {
+		font-size: 14px;
+	}
+
+	.upload-page__content {
+		width: calc(100% - 40px);
+		padding: 52px 0 64px;
+	}
+
+	.upload-page__heading h1 {
+		font-size: 34px;
+	}
+
+	.upload-dropzone {
+		min-height: 230px;
+		padding: 22px 16px;
 	}
 }
 

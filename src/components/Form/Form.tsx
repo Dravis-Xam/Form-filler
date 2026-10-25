@@ -14,6 +14,8 @@ const tabs: FormTab[] = [
 interface FormProps {
 	form: MarriageCertificateForm
 	onChange: (form: MarriageCertificateForm) => void
+	activeTab: string
+	onTabChange: (tabId: string) => void
 }
 
 function formatLabel(value: string) {
@@ -83,17 +85,17 @@ function setValueAtPath(source: unknown, path: (string | number)[], value: strin
 	return source
 }
 
-export default function Form({ form, onChange }: FormProps) {
-	const [activeTab, setActiveTab] = useState(tabs[0].id)
+export default function Form({ form, onChange, activeTab, onTabChange }: FormProps) {
 	const [isPrinting, setIsPrinting] = useState(false)
 	const [printError, setPrintError] = useState('')
 	const firstIncompleteRef = useRef<HTMLInputElement>(null)
-	const activeIndex = tabs.findIndex((tab) => tab.id === activeTab)
-	const activeSection = form[activeTab as keyof MarriageCertificateForm]
 	const { total, filled } = countFields(form)
 	const progress = total ? Math.round((filled / total) * 100) : 0
 	const incompletePath = findFirstEmptyPath(form)
 	const isComplete = incompletePath === null
+	const safeActiveTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : tabs[0].id
+	const safeActiveIndex = tabs.findIndex((tab) => tab.id === safeActiveTab)
+	const safeActiveSection = form[safeActiveTab as keyof MarriageCertificateForm]
 
 	function updateField(path: (string | number)[], value: string) {
 		onChange(setValueAtPath(form, path, value) as MarriageCertificateForm)
@@ -101,7 +103,7 @@ export default function Form({ form, onChange }: FormProps) {
 
 	function goToIncompleteField() {
 		if (!incompletePath) return
-		setActiveTab(String(incompletePath[0]))
+		onTabChange(String(incompletePath[0]))
 		window.requestAnimationFrame(() => {
 			firstIncompleteRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 			firstIncompleteRef.current?.focus({ preventScroll: true })
@@ -169,7 +171,7 @@ export default function Form({ form, onChange }: FormProps) {
 				<div className="form-header__title-row">
 					<div>
 						<h1 id="form-title">Certificate details</h1>
-						<p className="form-header__step">Step {activeIndex + 1} of {tabs.length}</p>
+						<p className="form-header__step">Step {safeActiveIndex + 1} of {tabs.length}</p>
 					</div>
 					<span className="form-header__percent">{progress}%</span>
 				</div>
@@ -185,31 +187,31 @@ export default function Form({ form, onChange }: FormProps) {
 				</div>
 			</header>
 
-			<Tabs tabs={tabs} activeTab={activeTab} onSelect={setActiveTab} />
+			<Tabs tabs={tabs} activeTab={safeActiveTab} onSelect={onTabChange} />
 
 			<div
 				className="form-panel__body"
-				id={`panel-${activeTab}`}
+				id={`panel-${safeActiveTab}`}
 				role="tabpanel"
-				aria-labelledby={`tab-${activeTab}`}
+				aria-labelledby={`tab-${safeActiveTab}`}
 			>
-				<div className="form-fields">{renderFields(activeSection, [activeTab])}</div>
+				<div className="form-fields">{renderFields(safeActiveSection, [safeActiveTab])}</div>
 			</div>
 
 			<footer className="form-footer">
 				<button
 					className="form-footer__button form-footer__button--secondary"
 					type="button"
-					disabled={activeIndex === 0}
-					onClick={() => setActiveTab(tabs[activeIndex - 1].id)}
+					disabled={safeActiveIndex === 0}
+					onClick={() => onTabChange(tabs[safeActiveIndex - 1].id)}
 				>
 					Previous
 				</button>
-				{activeIndex < tabs.length - 1 ? (
+				{safeActiveIndex < tabs.length - 1 ? (
 					<button
 						className="form-footer__button form-footer__button--primary"
 						type="button"
-						onClick={() => setActiveTab(tabs[activeIndex + 1].id)}
+						onClick={() => onTabChange(tabs[safeActiveIndex + 1].id)}
 					>
 						Continue <span aria-hidden="true">→</span>
 					</button>
